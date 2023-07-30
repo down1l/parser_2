@@ -35,7 +35,7 @@ async def ParseMainPage(url: str) -> Union[list, ParseException]:
     raise ParseException(f"Неудачный запрос на главную страницу {url}")
 
 
-async def ParseProductPage(url: str) -> Union[dict, str]:
+async def ParseProductPage(url: str) -> Union[dict, ParseException]:
 
     async with AsyncClient() as client:
         response = await client.get(url)
@@ -72,8 +72,7 @@ async def ParseProductPage(url: str) -> Union[dict, str]:
 
         return name, id_, article, price, image, description, categories
 
-    else:
-        raise ParseException(f"Неудачный запрос на страницу {url}")
+    raise ParseException(f"Неудачный запрос на страницу {url}")
 
 
 def MakeRecord(data: list) -> dict:
