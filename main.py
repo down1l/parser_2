@@ -4,11 +4,13 @@ from lxml.etree import HTMLParser
 
 
 import os
+import gc
 import asyncio
 import json
 from typing import Union
 import re
 from datetime import datetime
+import time
 
 
 URL = "https://лучшиелакомства.рф/"
@@ -89,22 +91,29 @@ def MakeJSONdump(data: list) -> None:
 
 
 async def main():
-    dump = []
+    while True:
+        dump = []
 
-    try:
-        product_links = await ParseMainPage(URL)
-    except ParseException as e:
-        print(f"Ошибка: {e}")
-
-    for link in product_links:
         try:
-            data = await ParseProductPage(link)
-            dump.append(MakeRecord(data))
-
+            product_links = await ParseMainPage(URL)
         except ParseException as e:
             print(f"Ошибка: {e}")
-    
-    MakeJSONdump(dump)
+
+        for link in product_links:
+            try:
+                data = await ParseProductPage(link)
+                dump.append(MakeRecord(data))
+
+            except ParseException as e:
+                print(f"Ошибка: {e}")
+
+        MakeJSONdump(dump)
+
+        # Очистка оперативной памяти
+        del (dump, data, product_links)
+        gc.collect()
+
+        time.sleep(5 * 24 * 60 * 60)
 
 
 if __name__ == "__main__":
